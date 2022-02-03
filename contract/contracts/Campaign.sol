@@ -49,11 +49,23 @@ contract Campaign {
     }
 
     function approve(uint256 request_index) public onlyApprovers {
-        require(request_index >= 0 && request_index < requests.length);
+        require(request_index < requests.length);
         Request storage request = requests[request_index];
         require(!request.votes[msg.sender]);
         request.votes[msg.sender] = true;
         request.totalVotes++;
+    }
+
+    function finalizeRequest(uint256 request_index) public onlyManager {
+        require(request_index < requests.length);
+        Request storage request = requests[request_index];
+
+        require(!request.completed);
+        uint256 total_approvers = list_of_approvers.length;
+        require(request.totalVotes > total_approvers / 2);
+        request.completed = true;
+
+        request.recipient.transfer(request.value);
     }
 
     modifier onlyApprovers() {
