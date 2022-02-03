@@ -21,9 +21,9 @@ beforeEach("get a list of all accounts", async () => {
   accounts = await web3.eth.getAccounts()
 
   //Use one of those accounts to deploy the contract
-  const contract = new web3.eth.Contract(JSON.parse(compiled['interface']))
+  const contract = new web3.eth.Contract(JSON.parse(compiled["interface"]))
   lottery = await contract
-    .deploy({ data: compiled['bytecode'], arguments: [] })
+    .deploy({ data: compiled["bytecode"], arguments: [10000] })
     .send({ from: accounts[0], gas: "1000000" })
 })
 
@@ -35,5 +35,33 @@ describe("Campaign", () => {
   it("has the default contract", async () => {
     const manager = await lottery.methods.manager().call()
     assert.ok(manager)
+  })
+  it("singup as approver", async () => {
+    let approvers = await lottery.methods.getApprovers().call()
+    assert.ok(Array.isArray(approvers))
+    assert.equal(approvers.length, 0)
+
+    await lottery.methods.contribute().send({
+      from: accounts[1],
+      value: 10000,
+    })
+
+    approvers = await lottery.methods.getApprovers().call()
+    assert.ok(Array.isArray(approvers))
+    assert.equal(approvers[0], accounts[1])
+    assert.equal(approvers.length, 1)
+
+    try {
+      await lottery.methods.contribute().send({
+        from: accounts[1],
+        value: 10,
+      })
+      assert.ok(false)
+    } catch (e) {
+      assert.ok(e)
+    }
+  })
+  it("create an request", async () => {
+    
   })
 })
