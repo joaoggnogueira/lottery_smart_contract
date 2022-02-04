@@ -9,11 +9,13 @@ const Web3 = require("web3")
 
 const web3 = new Web3(ganache.provider())
 
-const compile = require("../compile")
+require("../compile")
 
-const compiled = compile("Campaign")
+const compiledCampaign = require("../build/Campaign.json")
+const compiledFactory = require("../build/CampaignFactory.json")
 
 let accounts
+let factory
 let campaign
 
 beforeEach("get a list of all accounts", async () => {
@@ -21,10 +23,43 @@ beforeEach("get a list of all accounts", async () => {
   accounts = await web3.eth.getAccounts()
 
   //Use one of those accounts to deploy the contract
-  const contract = new web3.eth.Contract(JSON.parse(compiled["interface"]))
-  campaign = await contract
-    .deploy({ data: compiled["bytecode"], arguments: [10000] })
+  const contract_campaign = new web3.eth.Contract(JSON.parse(compiledCampaign["interface"]))
+  campaign = await contract_campaign
+    .deploy({ data: compiledCampaign["bytecode"], arguments: [10000, accounts[0]] })
     .send({ from: accounts[0], gas: "1000000" })
+
+  const contract_factory = new web3.eth.Contract(JSON.parse(compiledFactory["interface"]))
+  factory = await contract_factory
+    .deploy({ data: compiledFactory["bytecode"], arguments: [] })
+    .send({ from: accounts[0], gas: "1000000" })
+})
+
+describe("Factory", () => {
+  it("deploys a contract", () => {
+    assert.ok(factory.options.address)
+  })
+  it("starts empty", async () => {
+    let campaigns = await factory.methods.getDeployedCampaigns().call()
+
+    assert(Array.isArray(campaigns))
+    assert.equal(campaigns.length, 0)
+  })
+  it("create a Campaign", async () => {
+    await factory.methods.createCampaign(100).send({
+      from: accounts[0],
+      gas: 1000000,
+    })
+    campaigns = await factory.methods.getDeployedCampaigns().call()
+
+    assert.equal(campaigns.length, 1)
+    assert.ok(campaigns[0])
+    console.log(campaigns[0])
+
+    const campaign = new web3.eth.Contract(JSON.parse(compiledCampaign["interface"]), campaigns[0])
+
+    assert.ok(campaign)
+    assert.ok(campaign.options.address)
+  })
 })
 
 describe("Campaign", () => {
@@ -41,7 +76,7 @@ describe("Campaign", () => {
 
   it("singup as approver", async () => {
     let approvers = await campaign.methods.getApprovers().call()
-    assert.ok(Array.isArray(approvers))
+    assert(Array.isArray(approvers))
     assert.equal(approvers.length, 0)
 
     await campaign.methods.contribute().send({

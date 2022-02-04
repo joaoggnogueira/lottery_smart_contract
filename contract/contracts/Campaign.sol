@@ -2,12 +2,12 @@
 
 pragma solidity >=0.4.17;
 
-contract Factory {
-    address[] deployedCampaigns;
+contract CampaignFactory {
+    address[] public deployedCampaigns;
 
-    function createCampaign(uint256 minimun) public {
-        address campaign = new Campaign(minimun);
-        deployedCampaigns.push(campaign);
+    function createCampaign(uint256 minimum) public {
+        address newCampaign = new Campaign(minimum, msg.sender);
+        deployedCampaigns.push(newCampaign);
     }
 
     function getDeployedCampaigns() public view returns (address[]) {
@@ -31,8 +31,8 @@ contract Campaign {
     address[] list_of_approvers;
     Request[] public requests;
 
-    constructor(uint256 _minimumContribution) public {
-        manager = msg.sender;
+    constructor(uint256 _minimumContribution, address creator) public {
+        manager = creator;
         minimumContribution = _minimumContribution;
     }
 
