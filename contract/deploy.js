@@ -2,8 +2,10 @@
 const HDWalletProvider = require("@truffle/hdwallet-provider")
 const Web3 = require("web3")
 
-const compile = require("./compile")
-const compiled = compile("Campaign")
+require("./compile")
+
+const compiledCampaign = require("./build/Campaign.json")
+const compiledFactory = require("./build/CampaignFactory.json")
 
 const provider = new HDWalletProvider(
   "check cash ecology setup expose vital desert scan amount deputy what force",
@@ -12,7 +14,7 @@ const provider = new HDWalletProvider(
 
 const web3 = new Web3(provider)
 
-async function deploy() {
+async function deploy(compiled) {
   //   const accounts = await web3.eth.getAccounts()
   //   console.log(accounts)
 
@@ -29,7 +31,9 @@ async function deploy() {
 
   console.log("Contract deployed to", result.options.address)
   console.log(JSON.stringify(JSON.parse(compiled["interface"]), null, 2))
-  provider.engine.stop()
 }
 
-deploy()
+// deploy(compiledCampaign)
+deploy(compiledFactory)
+
+provider.engine.stop()
