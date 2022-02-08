@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { Button, Card, Container, Grid } from "semantic-ui-react"
 import factory from "../factory"
-import "semantic-ui-css/semantic.min.css"
 import Layout from "../components/Layout"
 
 const rowStyle = {
@@ -35,7 +34,7 @@ class App extends React.Component {
       fluid: true,
     }))
     return (
-      <div style={{ marginTop: 64, ...columnStyle }}>
+      <div style={columnStyle}>
         <div style={{ ...rowStyle, ...flex1 }}>
           <h2 style={{ margin: 0 }}>Campaigns</h2>
           <Button icon="add circle" content="NEW CAMPAIGN" primary />
@@ -47,11 +46,7 @@ class App extends React.Component {
   }
 
   render() {
-    return (
-      <Layout>
-        <Container>{this.renderCampaings()}</Container>
-      </Layout>
-    )
+    return <Layout>{this.renderCampaings()}</Layout>
   }
 }
 

@@ -1,18 +1,22 @@
 import React from "react"
+import Header from "./Header"
+import Footer from "./Footer"
+import "semantic-ui-css/semantic.min.css"
+
+import { Container } from "semantic-ui-react"
 
 const Layout = (props) => {
-  function renderHeader() {
-    return <div style={{ background: "#2185d0", width: "100%", height: 64 }}></div>
-  }
   function renderFooter() {
     return <div style={{ background: "#2185d0", width: "100%", height: 64 }}></div>
   }
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {renderHeader()}
-      <div style={{ flexGrow: 1 }}>{props.children}</div>
-      {renderFooter()}
-    </div>
+    <Container>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Header />
+        <div style={{ flexGrow: 1 }}>{props.children}</div>
+        <Footer />
+      </div>
+    </Container>
   )
 }
 
