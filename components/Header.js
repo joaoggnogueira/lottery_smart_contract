@@ -1,13 +1,20 @@
 import React from "react"
 import { Menu } from "semantic-ui-react"
+import { Link } from "../routes"
 
 const Header = () => {
   return (
     <Menu style={{ marginTop: 24, marginBottom: 64 }}>
-      <Menu.Item>CrowdCoin</Menu.Item>
+      <Link route="/">
+        <a className="item">CrowdCoin</a>
+      </Link>
       <Menu.Menu position="right">
-        <Menu.Item>ALL CAMPAIGNS</Menu.Item>
-        <Menu.Item>NEW CAMPAIGN</Menu.Item>
+        <Link route="/">
+          <a className="item">ALL CAMPAIGNS</a>
+        </Link>
+        <Link route="/campaigns/new">
+          <a className="item">NEW CAMPAIGN</a>
+        </Link>
       </Menu.Menu>
     </Menu>
   )

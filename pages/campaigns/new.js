@@ -4,6 +4,8 @@ import { Form, Button, Input, Message } from "semantic-ui-react"
 import factory from "factory"
 import web3 from "../../web3"
 
+import { Router } from "../../routes"
+
 const NewCampaign = function () {
   const [minimunContribution, setMinimunContribution] = useState(100)
   const [loading, setLoading] = useState(false)
@@ -17,6 +19,8 @@ const NewCampaign = function () {
       const accounts = await web3.eth.getAccounts()
 
       await factory.methods.createCampaign(minimunContribution).send({ from: accounts[0] })
+
+      Router.pushRoute("/")
     } catch (e) {
       setErrorMessage(e.message.toString())
     }
