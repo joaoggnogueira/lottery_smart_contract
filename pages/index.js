@@ -4,22 +4,7 @@ import factory from "../factory"
 import Layout from "../components/Layout"
 import { Link } from "../routes"
 
-const rowStyle = {
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-}
-
-const flex1 = {
-  flex: 1,
-}
-
-const columnStyle = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "stretch",
-}
+import { Row, Column } from "../styles/index.js"
 
 class App extends React.Component {
   static async getInitialProps() {
@@ -29,7 +14,9 @@ class App extends React.Component {
   }
 
   renderEmptyList() {
-    return <img src="https://assets.materialup.com/uploads/8814432b-2132-439c-bc9e-398f8a84dbea/attachment.jpg" />
+    return (
+      <img src="https://assets.materialup.com/uploads/8814432b-2132-439c-bc9e-398f8a84dbea/attachment.jpg" />
+    )
   }
 
   renderCampaings() {
@@ -43,18 +30,18 @@ class App extends React.Component {
       fluid: true,
     }))
     return (
-      <div style={columnStyle}>
-        <div style={{ ...rowStyle, ...flex1 }}>
+      <Column>
+        <Row flex="1" justifyContent="space-between" alignItems="center">
           <h2 style={{ margin: 0 }}>Campaigns</h2>
           <Link route="/campaigns/new">
             <a>
               <Button icon="add circle" content="NEW CAMPAIGN" primary />
             </a>
           </Link>
-        </div>
+        </Row>
         <h3 style={{ marginTop: 64 }}>{this.props.campaigns.length} campaigns avaliable!</h3>
         {items.length > 0 ? <Card.Group items={items} /> : this.renderEmptyList()}
-      </div>
+      </Column>
     )
   }
 
