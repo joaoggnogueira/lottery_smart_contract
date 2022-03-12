@@ -252,4 +252,45 @@ describe("Campaign", () => {
       assert.ok(e)
     }
   })
+
+  it("get summary and get request counts", async () => {
+    const requestCounts0 = await campaign.methods.getRequestCount().call()
+    assert.equal(requestCounts0, 0)
+
+    await campaign.methods.createRequest("Loren Ipsun dolor a sit amet", 15000, accounts[0]).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    const requestCounts1 = await campaign.methods.getRequestCount().call()
+    assert.equal(requestCounts1, 1)
+
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: 10000,
+    })
+
+    await campaign.methods.contribute().send({
+      from: accounts[2],
+      value: 10000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[1],
+      gas: 3000000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[2],
+      gas: 3000000,
+    })
+
+    const summary = await campaign.methods.getSummary().call()
+    assert.ok(summary)
+    assert.ok(summary[0] === "10000")
+    assert.ok(summary[1] === "20000")
+    assert.ok(summary[2] === "1")
+    assert.ok(summary[3] === "2")
+    assert.ok(summary[4] === accounts[0])
+  })
 })

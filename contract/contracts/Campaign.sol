@@ -90,4 +90,29 @@ contract Campaign {
         require(msg.sender == manager);
         _;
     }
+
+    function getRequestCount() public view returns (uint256) {
+        return (requests.length);
+    }
+
+    function getSummary()
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            address
+        )
+    {
+        uint256 total_approvers = list_of_approvers.length;
+        return (
+            minimumContribution,
+            address(this).balance,
+            requests.length,
+            total_approvers,
+            manager
+        );
+    }
 }
