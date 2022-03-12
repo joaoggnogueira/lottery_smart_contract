@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Button, Card, Container, Grid } from "semantic-ui-react"
 import factory from "../factory"
 import Layout from "../components/Layout"
+import { Link } from "../routes"
 
 const rowStyle = {
   display: "flex",
@@ -27,20 +28,32 @@ class App extends React.Component {
     return { campaigns }
   }
 
+  renderEmptyList() {
+    return <img src="https://assets.materialup.com/uploads/8814432b-2132-439c-bc9e-398f8a84dbea/attachment.jpg" />
+  }
+
   renderCampaings() {
     const items = this.props.campaigns.map((campaign) => ({
       header: campaign,
-      description: <a>View campaign</a>,
+      description: (
+        <Link route={`/campaigns/${campaign}`}>
+          <a>View campaign</a>
+        </Link>
+      ),
       fluid: true,
     }))
     return (
       <div style={columnStyle}>
         <div style={{ ...rowStyle, ...flex1 }}>
           <h2 style={{ margin: 0 }}>Campaigns</h2>
-          <Button icon="add circle" content="NEW CAMPAIGN" primary />
+          <Link route="/campaigns/new">
+            <a>
+              <Button icon="add circle" content="NEW CAMPAIGN" primary />
+            </a>
+          </Link>
         </div>
         <h3 style={{ marginTop: 64 }}>{this.props.campaigns.length} campaigns avaliable!</h3>
-        <Card.Group items={items} />
+        {items.length > 0 ? <Card.Group items={items} /> : this.renderEmptyList()}
       </div>
     )
   }
