@@ -6,12 +6,14 @@ const StatCard = (props) => (
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
+      alignItems: "center",
       width: 200,
-      height: 100,
-      border: "1px solid #999",
-      padding: "8px 16px",
+      backgroundColor: "#eee",
+      border: "1px solid #ddd",
+      color: "#666",
+      padding: "32px 16px",
       borderRadius: "8px",
-      margin: "8px",
+      marginRight: "16px",
     }}
   >
     <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-end" }}>

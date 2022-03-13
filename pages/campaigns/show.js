@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import Layout from "components/Layout"
 import Campaign from "../../contract/build/Campaign.json"
-import { Message, Button } from "semantic-ui-react"
+import { Message, Input, Form, Button, Icon, Dimmer, Loader } from "semantic-ui-react"
 import { useRouter } from "next/router"
 import { Row, Column, Padding, StatCard } from "../../styles/index.js"
 import { Link } from "../../routes"
@@ -12,21 +12,27 @@ const Show = function () {
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
   const [summary, setSummary] = useState({})
-  const [address, setAddress] = useState("")
+
+  const [contribution, setContribution] = useState(0)
+  const [loadingContribute, setLoadingContribute] = useState(false)
+  const [contributeErrorMessage, setContributeErrorMessage] = useState(false)
+
   const [userAddress, setUserAddress] = useState("")
+  const [campaign, setCampaign] = useState(false)
+
+  const [approvers, setApprovers] = useState([])
 
   const router = useRouter()
 
-  useEffect(async () => {
+  async function refresh() {
     try {
       setLoading(true)
-      console.log(router.query)
-      setAddress(router.query.address)
       const accounts = await web3.eth.getAccounts()
 
       setUserAddress(accounts[0])
 
       const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
+      setCampaign(campaign)
       const summary = await campaign.methods.getSummary().call()
       console.log("summary", summary)
       setSummary({
@@ -36,11 +42,35 @@ const Show = function () {
         totalApprovers: summary[3],
         manager: summary[4],
       })
+
+      const _approvers = await campaign.methods.getApprovers().call()
+      setApprovers(_approvers)
+
+      setContribution(parseInt(summary[0]))
     } catch (e) {
       setErrorMessage(e.message.toString())
     }
     setLoading(false)
+  }
+
+  useEffect(() => {
+    refresh()
   }, [address])
+
+  async function onContribute(evt) {
+    setContributeErrorMessage("")
+    try {
+      evt.preventDefault()
+      setLoadingContribute(true)
+      const accounts = await web3.eth.getAccounts()
+      await campaign.methods.contribute().send({ from: accounts[0], value: parseInt(contribution) })
+
+      refresh()
+    } catch (e) {
+      setContributeErrorMessage(e.message.toString())
+    }
+    setLoadingContribute(false)
+  }
 
   function renderManagerButtons() {
     return (
@@ -54,47 +84,88 @@ const Show = function () {
 
   function renderContributeButtons() {
     return (
-      <Link route={`/campaigns/${address}/contribute`}>
-        <a>
-          <Button icon="add circle" content="CONTRIBUTE" primary />
-        </a>
-      </Link>
+      <Form onSubmit={onContribute} error>
+        <Form.Field>
+          <label>Contribution ammount</label>
+          <Input
+            value={contribution}
+            label="Wei"
+            labelPosition="right"
+            type="number"
+            style={{ width: 200 }}
+            onChange={(evt) => setContribution(evt.target.value)}
+          />
+        </Form.Field>
+        {contributeErrorMessage ? (
+          <Message error header="Opss" content={contributeErrorMessage} />
+        ) : null}
+        <Button primary loading={loadingContribute}>
+          Submit
+        </Button>
+      </Form>
     )
   }
 
+  const address = router.query.address
   const userIsOwner = summary.manager == userAddress
-
+  const userIsAlreadySignedIn = approvers.findIndex((d) => d == userAddress) != -1
   return (
     <Layout>
-      <h3>Campaign {address}</h3>
-      {errorMessage ? <Message error header="Opss" content={errorMessage} /> : null}
-      <Padding pt="2" pb="4">
-        <p>
-          Manager: {summary.manager} {userIsOwner ? "(You're the owner)" : ""}
-        </p>
-      </Padding>
-      <h4>Statistics</h4>
+      <Dimmer active={loading} inverted>
+        <Loader>Loading</Loader>
+      </Dimmer>
+      <Row justifyContent="space-between" alignItems="flex-start">
+        <Column>
+          <h3>
+            <Icon name="object group" />
+            Campaign Address
+            <br /> {address}
+          </h3>
+          {errorMessage ? <Message error header="Opss" content={errorMessage} /> : null}
+          <Padding pt="2" pb="4">
+            <p>
+              <Icon name="user circle" />
+              Manager Address {userIsOwner ? "(You're the owner)" : ""}
+              <br /> {summary.manager}
+            </p>
+          </Padding>
+        </Column>
+        <Button icon="refresh" content="REFRESH" primary onClick={refresh} />
+      </Row>
       <Padding pt="2" pb="4">
         <div>
-          <Row flexWrap="wrap">
+          <Row flexWrap="wrap" alignItems="stretch">
             <StatCard
               total={summary.minimunContribution}
               unit="wei"
               description="Minimum Contribution"
             />
             <StatCard total={summary.balance} unit="wei" description="Balance" />
-            <StatCard total={summary.requests} description="Requests" />
-            <StatCard total={summary.totalApprovers} description="Total Approvers" />
-            {!userIsOwner ? renderContributeButtons() : null}
+
+            <StatCard
+              total={summary.requests}
+              description="Requests"
+              linkTitle="click to see all requests"
+            />
+
+            <StatCard total={summary.totalApprovers} description="Approvers" />
           </Row>
         </div>
       </Padding>
-
-      <Row flex="1" alignItems="center" justifyContent="space-between">
-        <h4>Requests</h4>
+      <Padding pt="2" pb="4">
+        {!userIsOwner && !userIsAlreadySignedIn ? renderContributeButtons() : null}
         {userIsOwner ? renderManagerButtons() : null}
-      </Row>
-      <Padding pt="2" pb="4"></Padding>
+        {userIsAlreadySignedIn ? (
+          <Message success header="You're already signed into this campaign" />
+        ) : null}
+      </Padding>
+      <Padding pt="2" pb="4">
+        <Link route={`/campaigns/${address}/requests`}>
+          <a>
+            <Button icon="list ul" content="SEE THE REQUESTS" primary />
+          </a>
+        </Link>
+      </Padding>
     </Layout>
   )
 }
