@@ -278,12 +278,14 @@ describe("Campaign", () => {
       gas: 3000000,
     })
 
-    await campaign.methods.contribute().send({ //+10000
+    await campaign.methods.contribute().send({
+      //+10000
       from: accounts[1],
       value: 10000,
     })
 
-    await campaign.methods.contribute().send({ //+10000
+    await campaign.methods.contribute().send({
+      //+10000
       from: accounts[2],
       value: 10000,
     })
@@ -307,6 +309,48 @@ describe("Campaign", () => {
     } catch (e) {
       assert.ok(e)
     }
+  })
+
+  it("get request status", async () => {
+    try {
+      await campaign.methods.getRequestStatus(0, 0).call()
+      assert(false)
+    } catch (e) {
+      assert(e)
+    }
+
+    await campaign.methods.createRequest("Loren Ipsun dolor a sit amet", 15000, accounts[0]).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    let requestStatus = await campaign.methods.getRequestStatus(0, accounts[1]).call()
+    assert(requestStatus)
+    assert.equal(requestStatus[0], "15000")
+    assert.equal(requestStatus[1], "Loren Ipsun dolor a sit amet")
+    assert.equal(requestStatus[2], accounts[0])
+    assert.equal(requestStatus[3], false)
+    assert.equal(requestStatus[4], false)
+    assert.equal(requestStatus[5], 0)
+
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: 10000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[1],
+      gas: 3000000,
+    })
+
+    requestStatus = await campaign.methods.getRequestStatus(0, accounts[1]).call()
+    assert(requestStatus)
+    assert.equal(requestStatus[0], "15000")
+    assert.equal(requestStatus[1], "Loren Ipsun dolor a sit amet")
+    assert.equal(requestStatus[2], accounts[0])
+    assert.equal(requestStatus[3], false)
+    assert.equal(requestStatus[4], true)
+    assert.equal(requestStatus[5], "1")
   })
 
   it("get summary and get request counts", async () => {

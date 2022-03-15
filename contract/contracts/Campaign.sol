@@ -98,6 +98,30 @@ contract Campaign {
         return (requests.length);
     }
 
+    function getRequestStatus(uint256 index, address user)
+        public
+        view
+        returns (
+            uint256,
+            string,
+            address,
+            bool,
+            bool,
+            uint256
+        )
+    {
+        Request storage r = requests[index];
+
+        return (
+            r.value,
+            r.description,
+            r.recipient,
+            r.completed,
+            r.votes[user],
+            r.totalVotes
+        );
+    }
+
     function getSummary()
         public
         view
