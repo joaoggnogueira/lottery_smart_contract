@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import Layout from "components/Layout"
+import RequestCard from "components/RequestCard"
 import { useRouter } from "next/router"
 import { Button, Message, Dimmer, Loader } from "semantic-ui-react"
 import { Link } from "../../../routes"
@@ -16,6 +17,7 @@ const Request = function () {
   const [manager, setManager] = useState("")
   const [campaign, setCampaign] = useState(false)
   const [userAddress, setUserAddress] = useState("")
+  const [requests, setRequests] = useState([])
 
   async function refresh() {
     try {
@@ -26,8 +28,16 @@ const Request = function () {
       const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
       setCampaign(campaign)
       const _manager = await campaign.methods.manager().call()
-      console.log("manager", _manager)
       setManager(_manager)
+
+      const requestCount = await campaign.methods.getRequestCount().call()
+
+      const _requests = await Promise.all(
+        Array(requestCount)
+          .fill()
+          .map((_, index) => campaign.methods.requests(index).call())
+      )
+      setRequests(_requests)
     } catch (e) {
       setErrorMessage(e.message.toString())
     }
@@ -68,6 +78,11 @@ const Request = function () {
           </a>
         </Link>
       )}
+      <Column alignItems="stretch">
+        {requests.map((request) => (
+          <RequestCard {...request} />
+        ))}
+      </Column>
     </Layout>
   )
 }

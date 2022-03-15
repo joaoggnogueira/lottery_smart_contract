@@ -4,7 +4,7 @@ import { Link } from "../routes"
 
 const Header = () => {
   return (
-    <Menu style={{ marginTop: 24, marginBottom: 64 }}>
+    <Menu style={{ marginTop: 24, marginBottom: 32 }}>
       <Link route="/">
         <a className="item">CrowdCoin</a>
       </Link>

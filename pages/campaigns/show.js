@@ -110,7 +110,18 @@ const Show = function () {
       <Dimmer active={loading} inverted>
         <Loader>Loading</Loader>
       </Dimmer>
-      <Row justifyContent="space-between" alignItems="flex-start">
+      <Padding pb={3}>
+        <Row justifyContent="space-between" alignItems="center">
+          <Link route={`/`}>
+            <a>
+              <Button icon="chevron left" content="GO TO CAMPAIGNS" primary />
+            </a>
+          </Link>
+
+          <Button icon="refresh" content="REFRESH" primary onClick={refresh} />
+        </Row>
+      </Padding>
+      <Row>
         <Column>
           <h3>
             <Icon name="object group" />
@@ -121,12 +132,11 @@ const Show = function () {
           <Padding pt="2" pb="4">
             <p>
               <Icon name="user circle" />
-              Manager Address {userIsOwner ? "(You're the owner)" : ""}
+              Manager Address
               <br /> {summary.manager}
             </p>
           </Padding>
         </Column>
-        <Button icon="refresh" content="REFRESH" primary onClick={refresh} />
       </Row>
       <Padding pt="2" pb="4">
         <div>
@@ -149,6 +159,7 @@ const Show = function () {
         </div>
       </Padding>
       <Padding pt="2" pb="4">
+        {userIsOwner ? <Message success header="You're the owner of the project" /> : null}
         {!userIsOwner && !userIsAlreadySignedIn ? renderContributeButtons() : null}
         {userIsAlreadySignedIn ? (
           <Message success header="You're already signed into this campaign" />
