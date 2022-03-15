@@ -54,8 +54,14 @@ const Show = function () {
   }
 
   useEffect(() => {
-    refresh()
-  }, [address])
+    if (router.isReady) {
+      console.log(router.isReady)
+      if (!router.query.address) {
+        router.push("/")
+      }
+      refresh()
+    }
+  }, [router.isReady])
 
   async function onContribute(evt) {
     setContributeErrorMessage("")
@@ -70,16 +76,6 @@ const Show = function () {
       setContributeErrorMessage(e.message.toString())
     }
     setLoadingContribute(false)
-  }
-
-  function renderManagerButtons() {
-    return (
-      <Link route={`/campaigns/${address}/newRequest`}>
-        <a>
-          <Button icon="add circle" content="NEW REQUEST" primary />
-        </a>
-      </Link>
-    )
   }
 
   function renderContributeButtons() {
@@ -154,7 +150,6 @@ const Show = function () {
       </Padding>
       <Padding pt="2" pb="4">
         {!userIsOwner && !userIsAlreadySignedIn ? renderContributeButtons() : null}
-        {userIsOwner ? renderManagerButtons() : null}
         {userIsAlreadySignedIn ? (
           <Message success header="You're already signed into this campaign" />
         ) : null}
