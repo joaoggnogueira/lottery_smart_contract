@@ -1,5 +1,5 @@
 import React from "react"
-import { Card, Icon, Button } from "semantic-ui-react"
+import { Card, Icon, Button, Message } from "semantic-ui-react"
 import { Margin, Row } from "../styles"
 
 const Header = ({
@@ -8,14 +8,69 @@ const Header = ({
   recipient,
   value,
   isOwner,
+  completed,
+  totalVotes,
   finalizeRequest,
   approveRequest,
+  avaliableBalance,
+  avaliableTotalApprovers,
 }) => {
   const finalize = () => {
     finalizeRequest(index)
   }
   const approve = () => {
     approveRequest(index)
+  }
+  const renderOwnerActions = () => {
+    const hasEnoughVotes = totalVotes > avaliableTotalApprovers / 2
+    const hasEnoughBalance = avaliableBalance >= value
+    let error = ""
+
+    if (!hasEnoughBalance && !hasEnoughVotes) {
+      error = "You already dont have enough votes, even balance to finalize it!"
+    } else if (!hasEnoughBalance) {
+      error = "You already dont have enough balance to finalize it!"
+    } else if (!hasEnoughVotes) {
+      error = "You already dont have enough votes to finalize it!"
+    }
+
+    return (
+      <Row alignItems="stretch">
+        <Button
+          disabled={completed || error}
+          icon="check circle"
+          onClick={finalize}
+          content="FINALIZE REQUEST"
+          color="green"
+        />
+        {!error ? (
+          <Message
+            success
+            header="Already pending!"
+            icon="bullhorn"
+            content="You already have enough votes and balance to finalize"
+          />
+        ) : (
+          <Message warning style={{ marginTop: 0 }}>
+            <Icon name="warning sign" />
+            {error}
+          </Message>
+        )}
+      </Row>
+    )
+  }
+  const renderContributorActions = () => {
+    return (
+      <Row>
+        <Button
+          disabled={completed}
+          icon="check circle"
+          onClick={approve}
+          content="APPROVE REQUEST"
+          color="green"
+        />
+      </Row>
+    )
   }
   return (
     <Margin mt={2}>
@@ -34,17 +89,27 @@ const Header = ({
             {recipient}
           </Row>
         </Card.Content>
-        <Card.Content extra>
-          {isOwner ? (
-            <Button
-              icon="check circle"
-              onClick={finalize}
-              content="FINALIZE REQUEST"
-              color="green"
+        <Card.Content>
+          {completed ? (
+            <Message
+              success
+              header="Finalized"
+              icon="circle check"
+              content="This request has been finalized"
             />
           ) : (
-            <Button icon="check circle" onClick={approve} content="APPROVE REQUEST" color="green" />
+            <Message
+              primary
+              header="Already pending!"
+              icon="bullhorn"
+              content={
+                totalVotes + " of " + avaliableTotalApprovers + " contributors already approves it"
+              }
+            />
           )}
+        </Card.Content>
+        <Card.Content extra>
+          {isOwner ? renderOwnerActions() : renderContributorActions()}
         </Card.Content>
       </Card>
     </Margin>

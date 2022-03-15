@@ -104,7 +104,6 @@ const Show = function () {
 
   const address = router.query.address
   const userIsOwner = summary.manager == userAddress
-  const userIsAlreadySignedIn = approvers.findIndex((d) => d == userAddress) != -1
   return (
     <Layout>
       <Dimmer active={loading} inverted>
@@ -159,11 +158,11 @@ const Show = function () {
         </div>
       </Padding>
       <Padding pt="2" pb="4">
-        {userIsOwner ? <Message success header="You're the owner of the project" /> : null}
-        {!userIsOwner && !userIsAlreadySignedIn ? renderContributeButtons() : null}
-        {userIsAlreadySignedIn ? (
-          <Message success header="You're already signed into this campaign" />
-        ) : null}
+        {userIsOwner ? (
+          <Message success header="You're the owner of the project" />
+        ) : (
+          renderContributeButtons()
+        )}
       </Padding>
       <Padding pt="2" pb="4">
         <Link route={`/campaigns/${address}/requests`}>

@@ -19,6 +19,11 @@ const Request = function () {
   const [userAddress, setUserAddress] = useState("")
   const [requests, setRequests] = useState([])
   const [requestCount, setRequestCount] = useState(0)
+  const [summary, setSummary] = useState({})
+
+  const finalizeRequest = async function (index) {}
+
+  const approveRequest = async function (index) {}
 
   async function refresh() {
     try {
@@ -28,6 +33,17 @@ const Request = function () {
 
       const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
       setCampaign(campaign)
+
+      const summary = await campaign.methods.getSummary().call()
+      console.log("summary", summary)
+      setSummary({
+        minimunContribution: summary[0],
+        balance: summary[1],
+        requests: summary[2],
+        totalApprovers: summary[3],
+        manager: summary[4],
+      })
+
       const _manager = await campaign.methods.manager().call()
       setManager(_manager)
 
@@ -47,13 +63,8 @@ const Request = function () {
   }
 
   useEffect(() => {
-    if (router.isReady) {
-      if (!router.query.address) {
-        router.push("/")
-      }
-      refresh()
-    }
-  }, [router.isReady])
+    refresh()
+  }, [userAddress])
 
   const userIsOwner = manager == userAddress
 
@@ -82,7 +93,16 @@ const Request = function () {
       <h3>{requestCount} Requests Found!</h3>
       <Column alignItems="stretch">
         {requests.map((request, index) => (
-          <RequestCard isOwner={userIsOwner} index={index} {...request} />
+          <RequestCard
+            key={index}
+            isOwner={userIsOwner}
+            index={index}
+            finalizeRequest={finalizeRequest}
+            approveRequest={approveRequest}
+            avaliableBalance={summary.balance}
+            avaliableTotalApprovers={summary.totalApprovers}
+            {...request}
+          />
         ))}
       </Column>
     </Layout>
