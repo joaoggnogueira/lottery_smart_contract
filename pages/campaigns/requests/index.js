@@ -81,8 +81,8 @@ const Request = function () {
       )}
       <h3>{requestCount} Requests Found!</h3>
       <Column alignItems="stretch">
-        {requests.map((request) => (
-          <RequestCard {...request} />
+        {requests.map((request, index) => (
+          <RequestCard isOwner={userIsOwner} index={index} {...request} />
         ))}
       </Column>
     </Layout>
