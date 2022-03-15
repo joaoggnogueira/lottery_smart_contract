@@ -18,6 +18,7 @@ const Request = function () {
   const [campaign, setCampaign] = useState(false)
   const [userAddress, setUserAddress] = useState("")
   const [requests, setRequests] = useState([])
+  const [requestCount, setRequestCount] = useState(0)
 
   async function refresh() {
     try {
@@ -31,9 +32,10 @@ const Request = function () {
       setManager(_manager)
 
       const requestCount = await campaign.methods.getRequestCount().call()
+      setRequestCount(requestCount)
 
       const _requests = await Promise.all(
-        Array(requestCount)
+        Array(parseInt(requestCount))
           .fill()
           .map((_, index) => campaign.methods.requests(index).call())
       )
@@ -49,7 +51,6 @@ const Request = function () {
       if (!router.query.address) {
         router.push("/")
       }
-      console.log("Requesting router", router)
       refresh()
     }
   }, [router.isReady])
@@ -78,6 +79,7 @@ const Request = function () {
           </a>
         </Link>
       )}
+      <h3>{requestCount} Requests Found!</h3>
       <Column alignItems="stretch">
         {requests.map((request) => (
           <RequestCard {...request} />
