@@ -100,6 +100,25 @@ describe("Campaign", () => {
     }
   })
 
+  it("double approve an request", async () => {
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: 10000,
+    })
+
+    await campaign.methods.contribute().send({
+      from: accounts[1],
+      value: 10000,
+    })
+
+    let approvers = await campaign.methods.getApprovers().call()
+    assert.equal(approvers[0], accounts[1])
+    assert.equal(approvers.length, 1)
+
+    const summary = await campaign.methods.getSummary().call()
+    assert.ok(summary[1] === "20000")
+  })
+
   it("create an request", async () => {
     await campaign.methods.createRequest("Loren Ipsun dolor a sit amet", 15000, accounts[0]).send({
       from: accounts[0],
@@ -244,6 +263,43 @@ describe("Campaign", () => {
     try {
       //try to approve twice
       await campaign.methods.finalizeRequest(0).send({
+        from: accounts[0],
+        gas: 3000000,
+      })
+      assert(false)
+    } catch (e) {
+      assert.ok(e)
+    }
+  })
+
+  it("finalize an request with insuficient balance", async () => {
+    await campaign.methods.createRequest("Loren Ipsun dolor a sit amet", 30000, accounts[0]).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    await campaign.methods.contribute().send({ //+10000
+      from: accounts[1],
+      value: 10000,
+    })
+
+    await campaign.methods.contribute().send({ //+10000
+      from: accounts[2],
+      value: 10000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[1],
+      gas: 3000000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[2],
+      gas: 3000000,
+    })
+
+    try {
+      let request = await campaign.methods.finalizeRequest(0).send({
         from: accounts[0],
         gas: 3000000,
       })

@@ -38,8 +38,10 @@ contract Campaign {
 
     function contribute() public payable {
         require(msg.value >= minimumContribution);
+        if (!approvers[msg.sender]) {
+            list_of_approvers.push(msg.sender);
+        }
         approvers[msg.sender] = true;
-        list_of_approvers.push(msg.sender);
     }
 
     function createRequest(
@@ -76,6 +78,7 @@ contract Campaign {
         require(!request.completed);
         uint256 total_approvers = list_of_approvers.length;
         require(request.totalVotes > total_approvers / 2);
+        require(address(this).balance >= request.value);
         request.completed = true;
 
         request.recipient.transfer(request.value);
