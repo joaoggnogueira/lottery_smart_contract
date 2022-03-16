@@ -28,7 +28,7 @@ const NewRequest = function () {
 
       const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
 
-      await campaign.methods.createRequest(description, value, address).send({
+      await campaign.methods.createRequest(description, value, recipient).send({
         from: accounts[0],
       })
 
