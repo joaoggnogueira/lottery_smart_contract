@@ -34,7 +34,6 @@ const Show = function () {
       const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
       setCampaign(campaign)
       const summary = await campaign.methods.getSummary().call()
-      console.log("summary", summary)
       setSummary({
         minimunContribution: summary[0],
         balance: summary[1],

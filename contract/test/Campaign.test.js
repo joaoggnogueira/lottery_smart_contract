@@ -25,7 +25,7 @@ beforeEach("get a list of all accounts", async () => {
   //Use one of those accounts to deploy the contract
   const contract_campaign = new web3.eth.Contract(JSON.parse(compiledCampaign["interface"]))
   campaign = await contract_campaign
-    .deploy({ data: compiledCampaign["bytecode"], arguments: [10000, accounts[0]] })
+    .deploy({ data: compiledCampaign["bytecode"], arguments: [100, accounts[0]] })
     .send({ from: accounts[0], gas: "1000000" })
 
   const contract_factory = new web3.eth.Contract(JSON.parse(compiledFactory["interface"]))
@@ -311,6 +311,97 @@ describe("Campaign", () => {
     }
   })
 
+  it("finalize an request with high balance", async () => {
+
+    await campaign.methods.createRequest("Loren Ipsun dolor a sit amet", 15000, accounts[0]).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    await campaign.methods.contribute().send({
+      //+100
+      from: accounts[1],
+      value: 10000,
+    })
+
+    await campaign.methods.contribute().send({
+      //+100
+      from: accounts[1],
+      value: 10000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[1],
+      gas: 3000000,
+    })
+
+    await campaign.methods.contribute().send({
+      //+100
+      from: accounts[2],
+      value: 10000,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[2],
+      gas: 3000000,
+    })
+
+    await campaign.methods.finalizeRequest(0).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    const request = await campaign.methods.requests(0).call()
+
+    assert.ok(request)
+    assert.equal(request.completed, true)
+  })
+
+  it("finalize an request with low balance", async () => {
+    await campaign.methods.createRequest("Loren Ipsun dolor a sit amet", 150, accounts[0]).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    await campaign.methods.contribute().send({
+      //+100
+      from: accounts[1],
+      value: 100,
+    })
+
+    await campaign.methods.contribute().send({
+      //+100
+      from: accounts[1],
+      value: 100,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[1],
+      gas: 3000000,
+    })
+
+    await campaign.methods.contribute().send({
+      //+100
+      from: accounts[2],
+      value: 100,
+    })
+
+    await campaign.methods.approve(0).send({
+      from: accounts[2],
+      gas: 3000000,
+    })
+
+    await campaign.methods.finalizeRequest(0).send({
+      from: accounts[0],
+      gas: 3000000,
+    })
+
+    const request = await campaign.methods.requests(0).call()
+
+    assert.ok(request)
+    assert.equal(request.completed, true)
+  })
+
   it("get request status", async () => {
     try {
       await campaign.methods.getRequestStatus(0, 0).call()
@@ -387,7 +478,7 @@ describe("Campaign", () => {
 
     const summary = await campaign.methods.getSummary().call()
     assert.ok(summary)
-    assert.ok(summary[0] === "10000")
+    assert.ok(summary[0] === "100")
     assert.ok(summary[1] === "20000")
     assert.ok(summary[2] === "1")
     assert.ok(summary[3] === "2")

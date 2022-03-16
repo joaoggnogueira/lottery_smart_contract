@@ -8,11 +8,13 @@ const Header = ({
   recipient,
   value,
   isOwner,
+  approved,
   completed,
   totalVotes,
   finalizeRequest,
   approveRequest,
   avaliableBalance,
+  userSignedin,
   avaliableTotalApprovers,
 }) => {
   const finalize = () => {
@@ -44,12 +46,10 @@ const Header = ({
           color="green"
         />
         {!error ? (
-          <Message
-            success
-            header="Already pending!"
-            icon="bullhorn"
-            content="You already have enough votes and balance to finalize"
-          />
+          <Message success style={{ marginTop: 0 }}>
+            <Icon name="check circle" />
+            You already have enough votes and balance to finalize
+          </Message>
         ) : (
           <Message warning style={{ marginTop: 0 }}>
             <Icon name="warning sign" />
@@ -62,13 +62,30 @@ const Header = ({
   const renderContributorActions = () => {
     return (
       <Row>
-        <Button
-          disabled={completed}
-          icon="check circle"
-          onClick={approve}
-          content="APPROVE REQUEST"
-          color="green"
-        />
+        {approved ? (
+          <Button
+            disabled={true}
+            icon="check circle"
+            onClick={approve}
+            content="YOU ALREADY APPROVED IT"
+            color="green"
+          />
+        ) : userSignedin ? (
+          <Button
+            disabled={completed}
+            icon="check circle"
+            onClick={approve}
+            content="APPROVE REQUEST"
+            color="green"
+          />
+        ) : (
+          <Button
+            disabled={true}
+            icon="warning sign"
+            color="orange"
+            content="YOU MUST CONTRIBUTE TO VOTE"
+          />
+        )}
       </Row>
     )
   }
@@ -82,7 +99,7 @@ const Header = ({
             <Margin ml={2} mr={0}>
               <Icon name="money" />
             </Margin>
-            {value} wei &nbsp;&nbsp; to the wallet
+            {value} of {avaliableBalance}&nbsp; wei &nbsp;&nbsp; to the wallet
             <Margin ml={2} mr={0}>
               <Icon name="user circle" />
             </Margin>

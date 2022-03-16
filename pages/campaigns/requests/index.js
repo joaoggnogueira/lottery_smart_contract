@@ -20,10 +20,39 @@ const Request = function () {
   const [requests, setRequests] = useState([])
   const [requestCount, setRequestCount] = useState(0)
   const [summary, setSummary] = useState({})
+  const [approvers, setApprovers] = useState([])
 
-  const finalizeRequest = async function (index) {}
+  const finalizeRequest = async function (index) {
+    setLoading(true)
 
-  const approveRequest = async function (index) {}
+    try {
+      const accounts = await web3.eth.getAccounts()
+      const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
+
+      await campaign.methods.finalizeRequest(index).send({ from: accounts[0] })
+
+      refresh()
+    } catch (e) {
+      setErrorMessage(e.message.toString())
+    }
+    setLoading(false)
+  }
+
+  const approveRequest = async function (index) {
+    setLoading(true)
+
+    try {
+      const accounts = await web3.eth.getAccounts()
+      const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
+
+      await campaign.methods.approve(index).send({ from: accounts[0] })
+
+      refresh()
+    } catch (e) {
+      setErrorMessage(e.message.toString())
+    }
+    setLoading(false)
+  }
 
   async function refresh() {
     try {
@@ -33,6 +62,9 @@ const Request = function () {
 
       const campaign = new web3.eth.Contract(JSON.parse(Campaign.interface), router.query.address)
       setCampaign(campaign)
+
+      const _approvers = await campaign.methods.getApprovers().call()
+      setApprovers(_approvers)
 
       const summary = await campaign.methods.getSummary().call()
       console.log("summary", summary)
@@ -53,9 +85,21 @@ const Request = function () {
       const _requests = await Promise.all(
         Array(parseInt(requestCount))
           .fill()
-          .map((_, index) => campaign.methods.requests(index).call())
+          .map((_, index) => campaign.methods.getRequestStatus(index, accounts[0]).call())
       )
-      setRequests(_requests)
+
+      console.log(_requests)
+
+      setRequests(
+        _requests.map((_request) => ({
+          value: parseInt(_request[0]),
+          description: _request[1],
+          recipient: _request[2],
+          completed: _request[3],
+          approved: _request[4],
+          totalVotes: parseInt(_request[5]),
+        }))
+      )
     } catch (e) {
       setErrorMessage(e.message.toString())
     }
@@ -67,7 +111,7 @@ const Request = function () {
   }, [userAddress])
 
   const userIsOwner = manager == userAddress
-
+  const userSignedin = approvers.find((a) => a == userAddress)
   return (
     <Layout>
       <Dimmer active={loading} inverted>
@@ -82,7 +126,7 @@ const Request = function () {
         <Button icon="refresh" content="REFRESH" primary onClick={refresh} />
       </Row>
       {errorMessage ? <Message error header="Opss" content={errorMessage} /> : null}
-      <h3>Campign Address: {address}</h3>
+      <h3>Campaign Address: {address}</h3>
       {userIsOwner && (
         <Link route={`/campaigns/${address}/requests/new`}>
           <a>
@@ -101,6 +145,7 @@ const Request = function () {
             approveRequest={approveRequest}
             avaliableBalance={summary.balance}
             avaliableTotalApprovers={summary.totalApprovers}
+            userSignedin={userSignedin}
             {...request}
           />
         ))}
